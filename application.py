@@ -41,6 +41,16 @@ def login_required(f):
     return x
 
 
+def check_user(f):
+    @wraps(f)
+    def x(restaurant_id):
+        restaurants = session.query(Restaurant).get(restaurant_id)
+        if login_session['email'] != restaurants.user.email:
+            return "permission denied"
+        else:
+            return f(restaurant_id)
+    return x
+
 # JSON APIs to view Restaurant Information
 @app.route('/restaurants/<int:restaurant_id>/menu/JSON')
 def restaurantMenuJSON(restaurant_id):
@@ -120,6 +130,7 @@ def newCategory():
 
 @login_required
 @app.route('/restaurant/<int:restaurant_id>/edit/', methods=['GET', 'POST'])
+@check_user
 def editCategory(restaurant_id):
     editedRestaurant = session.query(Restaurant) \
         .filter_by(id=restaurant_id).one()
@@ -135,6 +146,7 @@ def editCategory(restaurant_id):
 
 @login_required
 @app.route('/restaurant/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
+@check_user
 def deleteCategory(restaurant_id):
     deleteRestaurant = session.query(Restaurant) \
         .filter_by(id=restaurant_id).one_or_none()
@@ -154,6 +166,7 @@ def deleteCategory(restaurant_id):
 @login_required
 @app.route('/restaurant/<int:restaurant_id>/'
            'menu/new/', methods=['GET', 'POST'])
+@check_user
 def newMenuItem(restaurant_id):
     if request.method == 'POST':
         newItem = MenuItem(name=request.form['name'],
@@ -173,7 +186,7 @@ def newMenuItem(restaurant_id):
 
 
 # Task 2: Create route for editMenuItem function here
-
+@check_user
 @login_required
 @app.route('/restaurants/<int:restaurant_id>/'
            'menu/<int:menu_id>/edit/', methods=['GET', 'POST'])
@@ -378,7 +391,7 @@ def gdisconnect():
     else:
         # For whatever reason, the given token was invalid.
         response = make_response(
-            json.dumps('Failed to revoke token for given user', 400))
+            json.dumps('Failed to revoke token for given user'))
         response.headers['Content-Type'] = 'application/json'
         return response
 

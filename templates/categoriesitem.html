@@ -18,7 +18,7 @@
                 </div>
                 {% if session['email'] == restaurant.user.email %}
                 <a class="addctgry" href="{{ url_for('newMenuItem', restaurant_id = restaurant.id) }}">new&#8853;</a>
-                    {% endif %}
+                {%  endif %}
             {% else %}
                 <h2>{{ restaurant.name }}({{ quantity }} items)</h2>
             {% endif %}
